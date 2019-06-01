@@ -2,6 +2,7 @@
 
 
 from flask import Blueprint, render_template, request as req, redirect, session
+import models.model as authmodel
 auth = Blueprint('auth',__name__, template_folder="../templates", static_folder="../static")
 
 
@@ -28,9 +29,15 @@ def login():
         return render_template('auth/login.html')
     if req.method == 'POST':
         username = req.form.get('username')
+        password = req.form.get('password')
+
         if username is not None:
-            session['username'] = username
-            return redirect('/index')
+            result = authmodel.login(username, password)
+            if result:
+                session['username'] = username
+                return redirect('/index')
+            else:
+                return "<a href='/login'>Invalid username/password</a>"
         else:
             return "<a href='/login'>Please Input Correct Username</a>"
 
@@ -53,6 +60,7 @@ def register():
         password = req.form.get('password')
 
         if any([username is None, password is None]):
-            return "Please input correct Username/Password!"
+            return "<a href='/register'>Please input correct Data!</a>"
         else:
-            pass
+            authmodel.register(username,password)
+            return redirect('/login')
